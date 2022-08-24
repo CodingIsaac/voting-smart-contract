@@ -26,7 +26,7 @@ contract Voting {
     struct validVoter {
         uint vote;
        bool voted;
-        uint authorized;
+        bool authorized;
     }
 
     // the voting controllers controls the voting process from start to finish.
@@ -35,13 +35,13 @@ contract Voting {
 
     // an array to collect data of the same type.
 
-    Candidates[] public candidates;
+    Candidates[] public listOfCandidates;
 
-    // enum votingState {Created, Voting, Ended}
-    // votingState public state;
-    bool public Created; 
-    bool public votingStarted;
-    bool public Ended;
+    enum votingState {Created, Voting, Ended}
+    votingState public state;
+    // bool public Created; 
+    // bool public votingStarted;
+    // bool public Ended;
 
     mapping(address => validVoter) public voters;
 
@@ -51,11 +51,11 @@ contract Voting {
 
     /// Voting has not Commenced
 
-    error VotingNotStarted();
+    // error VotingNotStarted();
 
-    /// Voting has Ended
+    // /// Voting has Ended
 
-    error VotingHasEnded();
+    // error VotingHasEnded();
 
     /// You are not the Voting Controller
 
@@ -72,37 +72,69 @@ contract Voting {
     }
 
     modifier votingNotStarted() {
-        if (!votingStarted) {
-            revert VotingNotStarted();
-        }
+        require(state == votingState.Created, "Voting Window has not Reached");
+        // if (!votingStarted) {
+        //     revert VotingNotStarted();
+        // }
         _;
     }
 
     modifier votingHasEnded() {
-        if (!Ended) {
-            revert VotingHasEnded();
+       
+       require(state == votingState.Voting, "Voting Period not yet Opened");
+        // if (!Ended) {
+        //     revert VotingHasEnded();
 
-        }
+        // }
         _;
     }
 
     modifier votingSeason() {
-        if (!Created) {
-            revert VotingSeasonNotReached();
-        }
+        require(state == votingState.Ended, "Voting has Ended");
+        // if (!Created) {
+        //     revert VotingSeasonNotReached();
+        // }
+        _;
+    }
+    modifier verifiedVote() {
+        require(!voters[msg.sender].voted, "You can only Vote once");
+        _;
+    }
+
+    modifier authorizedVote() {
+        require(voters[msg.sender].authorized, "You are not an authorized Voter");
         _;
     }
 
 
 
 
-    constructor() {
+    constructor(string memory _name) {
         votingController = msg.sender;
-        // state = votingState.Created;
+        electionName = _name;
+       
         
 
         
     }
+
+    function addCandidate(string calldata _names) public onlyController{
+        listOfCandidates.push(Candidates(0, _names, 0));
+    }
+
+    function getNumOfCandidate() public view returns(uint) {
+        return listOfCandidates.length;
+    }
+
+    function authorizeVoting(address _votingPersonnel) onlyController public {
+        voters[_votingPersonnel].authorized = true;
+    }
+
+    function vote(uint _votingIndex) public votingNotStarted verifiedVote authorizedVote {
+
+    }
+
+
 
 
 
