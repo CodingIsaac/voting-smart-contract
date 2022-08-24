@@ -73,7 +73,7 @@ contract Voting {
         _;
     }
 
-    modifier votingNotStarted() {
+    modifier votingSeason() {
         require(state == votingState.Created, "Voting Window has not Reached");
         // if (!votingStarted) {
         //     revert VotingNotStarted();
@@ -81,7 +81,7 @@ contract Voting {
         _;
     }
 
-    modifier votingHasEnded() {
+    modifier votingHasCommenced() {
        
        require(state == votingState.Voting, "Voting Period not yet Opened");
         // if (!Ended) {
@@ -91,7 +91,7 @@ contract Voting {
         _;
     }
 
-    modifier votingSeason() {
+    modifier votingHasEnded() {
         require(state == votingState.Ended, "Voting has Ended");
         // if (!Created) {
         //     revert VotingSeasonNotReached();
@@ -114,6 +114,7 @@ contract Voting {
     constructor(string memory _name) {
         votingController = msg.sender;
         electionName = _name;
+        state = votingState.Voting;
        
         
 
@@ -132,7 +133,12 @@ contract Voting {
         voters[_votingPersonnel].authorized = true;
     }
 
-    function vote(uint _votingIndex) public votingNotStarted verifiedVote authorizedVote {
+    function startVoting() public votingHasCommenced onlyController {
+        state = votingState.Voting;
+
+    }
+
+    function vote(uint _votingIndex) public  verifiedVote authorizedVote {
         voters[msg.sender].vote = _votingIndex;
         voters[msg.sender].voted = true;
         listOfCandidates[_votingIndex].candidateVoteCount +=1;
@@ -142,8 +148,15 @@ contract Voting {
 
     }
 
-    function endVoting() onlyController votingHasEnded public view {
-        state == votingState.Ended;
+    function endVoting() onlyController votingHasEnded public view returns(string memory _winnerName) {
+        uint winner;
+        for (uint i = 0; i < listOfCandidates.length; i++) {
+            if (listOfCandidates[i].candidateVoteCount > winner) {
+                winner = listOfCandidates[i].candidateVoteCount;
+                _winnerName = listOfCandidates[1].candidateName;
+            }
+            
+        }
        
 
     }
