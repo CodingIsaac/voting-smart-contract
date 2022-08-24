@@ -47,6 +47,8 @@ contract Voting {
 
     string public electionName;
 
+    uint public totalVotes;
+
     // This is an access modifier
 
     /// Voting has not Commenced
@@ -131,6 +133,18 @@ contract Voting {
     }
 
     function vote(uint _votingIndex) public votingNotStarted verifiedVote authorizedVote {
+        voters[msg.sender].vote = _votingIndex;
+        voters[msg.sender].voted = true;
+        listOfCandidates[_votingIndex].candidateVoteCount +=1;
+        totalVotes++;
+        
+
+
+    }
+
+    function endVoting() onlyController votingHasEnded public view {
+        state == votingState.Ended;
+       
 
     }
 
